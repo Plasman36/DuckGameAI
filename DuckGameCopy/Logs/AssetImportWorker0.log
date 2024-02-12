@@ -9,13 +9,13 @@ D:\Unity Versions\2021.3.8f1\Editor\Unity.exe
 -batchMode
 -noUpm
 -name
-AssetImportWorker1
+AssetImportWorker0
 -projectPath
 D:/Game Design/My Games/Shared Games/DuckGameAI/DuckGameCopy
 -logFile
-Logs/AssetImportWorker1.log
+Logs/AssetImportWorker0.log
 -srvPort
-52248
+60332
 Successfully changed project path to: D:/Game Design/My Games/Shared Games/DuckGameAI/DuckGameCopy
 D:/Game Design/My Games/Shared Games/DuckGameAI/DuckGameCopy
 [UnityMemory] Configuration Parameters - Can be set up in boot.config

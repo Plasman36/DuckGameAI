@@ -17,17 +17,23 @@ public class MovementScript : MonoBehaviour
     private float jumpTimeCounter;
     public float jumpTime;
 
-    // Checks
+    //checks
+    [Header("Checks")]
     public Transform feetPos;
     public float checkRadius;
     public LayerMask whatIsGround;
     private bool isGrounded;
     private bool isJumping;
 
+    [Header("Gravity Modifiers")]
+    private float gravity;
+    public float gravitymod;
+
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        gravity = rb.gravityScale;
     }
 
     private void FixedUpdate()
@@ -47,6 +53,7 @@ public class MovementScript : MonoBehaviour
             rb.velocity = Vector2.up * jumpForce;
             isJumping = true;
             jumpTimeCounter = jumpTime;
+            GravUp();
         }
 
         //Jump Hold
@@ -67,5 +74,18 @@ public class MovementScript : MonoBehaviour
         {
             isJumping = false;
         }
+        if (rb.velocity.y < 0f)
+        {
+            GravDown();
+        }
+    }
+    void GravUp()
+    {
+        rb.gravityScale = gravitymod;
+    }
+
+    void GravDown()
+    {
+        rb.gravityScale = gravity;
     }
 }

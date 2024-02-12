@@ -1595,7 +1595,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.26415092, g: 0.26415092, b: 0.26415092, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -3179,8 +3179,8 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 3
   m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 9.8
+  m_AngularDrag: 0
+  m_GravityScale: 6
   m_Material: {fileID: 0}
   m_Interpolate: 1
   m_SleepingMode: 1
@@ -3266,14 +3266,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b18e040d3631104ab00111f05619fe3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 7.02
-  jumpForce: 12
-  jumpTime: 0.3
+  speed: 10.33
+  jumpForce: 11.25
+  jumpTime: 0.255
   feetPos: {fileID: 1761811010}
   checkRadius: 0.3
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
+  gravitymod: 5
 --- !u!1 &1036102885
 GameObject:
   m_ObjectHideFlags: 0
