@@ -27,13 +27,18 @@ public class MovementScript : MonoBehaviour
 
     [Header("Gravity Modifiers")]
     private float gravity;
-    public float gravitymod;
+    public float gravityMod;
+    public float gravityCut;
+    public float gravityCounter;
+    public float zeroGravityTime;
+    public float thisisgravity;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         gravity = rb.gravityScale;
+        gravityCounter = 0;
     }
 
     private void FixedUpdate()
@@ -44,9 +49,15 @@ public class MovementScript : MonoBehaviour
 
     private void Update()
     {
+        thisisgravity = rb.gravityScale;
         //Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
-        
+
+        if (isGrounded)
+        {
+            gravityCounter = 0;
+        }
+
         //Jump Initiation
         if(isGrounded == true && Input.GetKeyDown(KeyCode.W))
         {
@@ -56,10 +67,23 @@ public class MovementScript : MonoBehaviour
             GravUp();
         }
 
+        if (isJumping)
+        {
+            ++gravityCounter;
+            if (gravityCounter >= zeroGravityTime)
+            {
+                rb.gravityScale = rb.gravityScale + gravityCut;
+            }
+            if (rb.gravityScale == gravity)
+            {
+                rb.gravityScale = gravity;
+            }
+        }
+
         //Jump Hold
         if (Input.GetKey(KeyCode.W)&& isJumping == true)
         {
-            if(jumpTimeCounter > 0)
+            if (jumpTimeCounter > 0)
             {
                 rb.velocity = Vector2.up * jumpForce;
                 jumpTimeCounter -= Time.deltaTime;
@@ -67,12 +91,14 @@ public class MovementScript : MonoBehaviour
             else
             {
                 isJumping = false;
+                rb.gravityScale = gravity;
             }
         }
 
         if (Input.GetKeyUp(KeyCode.W))
         {
             isJumping = false;
+            rb.gravityScale = gravity;
         }
         if (rb.velocity.y < 0f)
         {
@@ -81,7 +107,7 @@ public class MovementScript : MonoBehaviour
     }
     void GravUp()
     {
-        rb.gravityScale = gravitymod;
+        rb.gravityScale = gravityMod;
     }
 
     void GravDown()

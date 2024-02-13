@@ -3274,7 +3274,11 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
-  gravitymod: 5
+  gravityMod: 0
+  gravityCut: 0.2
+  gravityCounter: 0
+  zeroGravityTime: 3
+  thisisgravity: 0
 --- !u!1 &1036102885
 GameObject:
   m_ObjectHideFlags: 0
