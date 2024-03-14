@@ -846,11 +846,11 @@ PlayerSettings:
     m_VersionName: 
   apiCompatibilityLevel: 6
   activeInputHandler: 0
-  cloudProjectId: 
+  cloudProjectId: 63aa69b5-9bea-4788-afba-44d546cd1c91
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: DuckGameCopy
+  organizationId: joshuacai2007
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 

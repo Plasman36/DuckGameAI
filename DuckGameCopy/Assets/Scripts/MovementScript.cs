@@ -32,6 +32,7 @@ public class MovementScript : MonoBehaviour
     public float gravityCounter;
     public float zeroGravityTime;
     public float thisisgravity;
+    public float fallClamp;
 
     // Start is called before the first frame update
     void Start()
@@ -45,6 +46,10 @@ public class MovementScript : MonoBehaviour
     {
         moveInput = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(moveInput * speed, rb.velocity.y);
+        if (rb.velocity.y < fallClamp)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, fallClamp);
+        }
     }
 
     private void Update()
