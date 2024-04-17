@@ -17,6 +17,10 @@ public class MovementScript : MonoBehaviour
     private float jumpTimeCounter;
     public float jumpTime;
 
+    [Header("Hovering")]
+    public float hoverSpeed;
+    private bool isHoldingWDuringJump;
+
     //checks
     [Header("Checks")]
     public Transform feetPos;
@@ -29,9 +33,8 @@ public class MovementScript : MonoBehaviour
     private float gravity;
     public float gravityMod;
     public float gravityCut;
-    public float gravityCounter;
-    public float zeroGravityTime;
-    public float thisisgravity;
+    private float gravityCounter;
+    private float zeroGravityTime;
     public float fallClamp;
 
     // Start is called before the first frame update
@@ -44,17 +47,25 @@ public class MovementScript : MonoBehaviour
 
     private void FixedUpdate()
     {
+        //Horizontal Movement
         moveInput = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(moveInput * speed, rb.velocity.y);
-        if (rb.velocity.y < fallClamp)
+        //Fall Clamp and Hover
+        if(rb.velocity.y < 0)
         {
-            rb.velocity = new Vector2(rb.velocity.x, fallClamp);
+            if(rb.velocity.y < hoverSpeed && Input.GetKey(KeyCode.W) && isHoldingWDuringJump == false)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, hoverSpeed);
+            }
+            else if (rb.velocity.y < fallClamp)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, fallClamp);
+            }
         }
     }
 
     private void Update()
     {
-        thisisgravity = rb.gravityScale;
         //Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
@@ -70,8 +81,10 @@ public class MovementScript : MonoBehaviour
             isJumping = true;
             jumpTimeCounter = jumpTime;
             GravUp();
+            isHoldingWDuringJump = true;
         }
 
+        //Grav Change
         if (isJumping)
         {
             ++gravityCounter;
@@ -92,6 +105,7 @@ public class MovementScript : MonoBehaviour
             {
                 rb.velocity = Vector2.up * jumpForce;
                 jumpTimeCounter -= Time.deltaTime;
+                isHoldingWDuringJump = true;
             }
             else
             {
@@ -104,6 +118,7 @@ public class MovementScript : MonoBehaviour
         {
             isJumping = false;
             rb.gravityScale = gravity;
+            isHoldingWDuringJump = false;
         }
         if (rb.velocity.y < 0f)
         {

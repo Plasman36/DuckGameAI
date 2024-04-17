@@ -3269,6 +3269,7 @@ MonoBehaviour:
   speed: 10.33
   jumpForce: 11.25
   jumpTime: 0.255
+  hoverSpeed: -1.15
   feetPos: {fileID: 1761811010}
   checkRadius: 0.3
   whatIsGround:
@@ -3276,9 +3277,6 @@ MonoBehaviour:
     m_Bits: 8
   gravityMod: 0
   gravityCut: 0.2
-  gravityCounter: 0
-  zeroGravityTime: 3
-  thisisgravity: 0
   fallClamp: -15
 --- !u!1 &1036102885
 GameObject:
