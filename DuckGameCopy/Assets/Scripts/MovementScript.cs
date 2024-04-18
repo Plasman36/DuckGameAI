@@ -22,17 +22,22 @@ public class MovementScript : MonoBehaviour
     private bool isHoldingWDuringJump;
 
     //checks
-    [Header("Checks")]
+    [Header("Ground Checks")]
     public Transform feetPos;
     public float checkRadius;
     public LayerMask whatIsGround;
     private bool isGrounded;
     private bool isJumping;
 
+    [Header("Head Checks")]
+    public Transform headPos;
+    public float headRadius;
+    public bool isHeadHit;
+
     [Header("Gravity Modifiers")]
-    private float gravity;
     public float gravityMod;
     public float gravityCut;
+    private float gravity;
     private float gravityCounter;
     private float zeroGravityTime;
     public float fallClamp;
@@ -69,6 +74,16 @@ public class MovementScript : MonoBehaviour
         //Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
+        //Head Check
+        isHeadHit = Physics2D.OverlapCircle(headPos.position, headRadius, whatIsGround);
+
+        if (isHeadHit)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, 0);
+            isJumping = false;
+            rb.gravityScale = gravity;
+        }
+
         if (isGrounded)
         {
             gravityCounter = 0;
@@ -99,7 +114,7 @@ public class MovementScript : MonoBehaviour
         }
 
         //Jump Hold
-        if (Input.GetKey(KeyCode.W)&& isJumping == true)
+        if (Input.GetKey(KeyCode.W) && isJumping == true)
         {
             if (jumpTimeCounter > 0)
             {
