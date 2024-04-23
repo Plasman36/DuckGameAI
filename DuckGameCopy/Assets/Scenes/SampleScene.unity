@@ -4598,6 +4598,8 @@ MonoBehaviour:
   jumpForce: 11.25
   jumpTime: 0.255
   hoverSpeed: -1.15
+  coyoteTime: 0.2
+  jumpBufferTime: 0.2
   feetPos: {fileID: 1761811010}
   checkRadius: 0.3
   whatIsGround:
@@ -4605,7 +4607,6 @@ MonoBehaviour:
     m_Bits: 8
   headPos: {fileID: 156531369}
   headRadius: 0.01
-  isHeadHit: 0
   gravityMod: 0
   gravityCut: 0.2
   fallClamp: -15

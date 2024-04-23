@@ -21,6 +21,14 @@ public class MovementScript : MonoBehaviour
     public float hoverSpeed;
     private bool isHoldingWDuringJump;
 
+    [Header("Coyote Time")]
+    public float coyoteTime;
+    private float coyoteTimeCounter;
+
+    [Header("Jump Buffering")]
+    public float jumpBufferTime;
+    private float jumpBufferingCounter;
+
     //checks
     [Header("Ground Checks")]
     public Transform feetPos;
@@ -32,8 +40,9 @@ public class MovementScript : MonoBehaviour
     [Header("Head Checks")]
     public Transform headPos;
     public float headRadius;
-    public bool isHeadHit;
+    private bool isHeadHit;
 
+    //gravity Mods
     [Header("Gravity Modifiers")]
     public float gravityMod;
     public float gravityCut;
@@ -87,16 +96,31 @@ public class MovementScript : MonoBehaviour
         if (isGrounded)
         {
             gravityCounter = 0;
+            coyoteTimeCounter = coyoteTime;
+        }
+        else
+        {
+            coyoteTimeCounter -= Time.deltaTime;
+        }
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            jumpBufferingCounter = jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferingCounter -= Time.deltaTime;
         }
 
         //Jump Initiation
-        if(isGrounded == true && Input.GetKeyDown(KeyCode.W))
+        if(coyoteTimeCounter > 0f && jumpBufferingCounter > 0f)
         {
             rb.velocity = Vector2.up * jumpForce;
             isJumping = true;
             jumpTimeCounter = jumpTime;
             GravUp();
             isHoldingWDuringJump = true;
+            jumpBufferingCounter = 0f;
         }
 
         //Grav Change
@@ -134,6 +158,7 @@ public class MovementScript : MonoBehaviour
             isJumping = false;
             rb.gravityScale = gravity;
             isHoldingWDuringJump = false;
+            coyoteTimeCounter = 0f;
         }
         if (rb.velocity.y < 0f)
         {
