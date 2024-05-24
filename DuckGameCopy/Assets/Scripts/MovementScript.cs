@@ -5,6 +5,7 @@ using UnityEngine;
 public class MovementScript : MonoBehaviour
 {
     private Rigidbody2D rb;
+    public BoxCollider2D bc;
 
     [Header("Horizontal Movement")]
     public float speed;
@@ -80,6 +81,9 @@ public class MovementScript : MonoBehaviour
 
     private void Update()
     {
+        //Collider switching
+        bc.size = new Vector2(1.0f, 0.5f);
+
         //Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
@@ -164,6 +168,8 @@ public class MovementScript : MonoBehaviour
         {
             GravDown();
         }
+
+
     }
     void GravUp()
     {
@@ -175,3 +181,11 @@ public class MovementScript : MonoBehaviour
         rb.gravityScale = gravity;
     }
 }
+/*If I press down and there is a horizontal velocity
+	Change player scale to fit a slide
+	Slowly decrease velocity until it’s 0
+
+	(ALSO REMOVE THE CAPABILITY TO WALK, SLIDING AND WALKING AT THE SAME TIME IS KINDA WEIRD)
+Else if I press down (without a horizontal velocity)
+	Squat
+*/
