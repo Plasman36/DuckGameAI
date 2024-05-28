@@ -10,6 +10,7 @@ public class MovementScript : MonoBehaviour
     [Header("Horizontal Movement")]
     public float speed;
     private float moveInput;
+    private bool isFacingRight;
 
     [Header("Jump")]
     public float jumpForce;
@@ -77,13 +78,19 @@ public class MovementScript : MonoBehaviour
                 rb.velocity = new Vector2(rb.velocity.x, fallClamp);
             }
         }
+
+        if(isFacingRight == false && moveInput < 0)
+        {
+            Flip();
+        }
+        else if (isFacingRight == true && moveInput > 0)
+        {
+            Flip();
+        }
     }
 
     private void Update()
     {
-        //Collider switching
-        bc.size = new Vector2(1.0f, 0.5f);
-
         //Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
@@ -171,6 +178,14 @@ public class MovementScript : MonoBehaviour
 
 
     }
+    void Flip()
+    {
+        isFacingRight = !isFacingRight;
+        Vector2 Scaler = transform.localScale;
+        Scaler.x *= -1;
+        transform.localScale = Scaler;
+    }
+
     void GravUp()
     {
         rb.gravityScale = gravityMod;
