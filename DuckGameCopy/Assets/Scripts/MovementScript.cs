@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class MovementScript : MonoBehaviour
 {
     private Rigidbody2D rb;
     public BoxCollider2D bc;
+    public Animator Animator;
 
     [Header("Horizontal Movement")]
     public float speed;
@@ -91,6 +93,9 @@ public class MovementScript : MonoBehaviour
 
     private void Update()
     {
+
+        Animator.SetFloat("speed", Mathf.Abs(rb.velocity.x));
+        
         //Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
