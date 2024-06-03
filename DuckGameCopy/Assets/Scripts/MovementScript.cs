@@ -96,6 +96,11 @@ public class MovementScript : MonoBehaviour
 
         Animator.SetFloat("speed", Mathf.Abs(rb.velocity.x));
         
+        if(rb.velocity.y < 0)
+        {
+            Animator.SetBool("isFalling", true);
+        }
+
         //Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
@@ -179,7 +184,9 @@ public class MovementScript : MonoBehaviour
         if (rb.velocity.y < 0f)
         {
             GravDown();
+
         }
+
 
 
     }
