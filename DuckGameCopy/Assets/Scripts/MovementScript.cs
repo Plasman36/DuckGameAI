@@ -13,6 +13,7 @@ public class MovementScript : MonoBehaviour
     public float speed;
     private float moveInput;
     private bool isFacingRight;
+    private bool isCrouching;
 
     [Header("Jump")]
     public float jumpForce;
@@ -96,9 +97,21 @@ public class MovementScript : MonoBehaviour
 
         Animator.SetFloat("speed", Mathf.Abs(rb.velocity.x));
         
-        if(rb.velocity.y < 0)
+        if(rb.velocity.y < -0.01)
         {
             Animator.SetBool("isFalling", true);
+            Animator.SetBool("isJumping", false);
+        }
+        if(rb.velocity.y > -0.01 && rb.velocity.y < 0.01)
+        {
+            Animator.SetBool("isFalling", false);
+            Animator.SetBool("isJumping", false);
+        }
+
+        if (rb.velocity.y > 0.01)
+        {
+            Animator.SetBool("isJumping", true);
+            Animator.SetBool("isFalling", false);
         }
 
         //Ground Check
