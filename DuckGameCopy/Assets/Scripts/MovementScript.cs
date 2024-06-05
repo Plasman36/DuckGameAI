@@ -194,7 +194,7 @@ public class MovementScript : MonoBehaviour
             isHoldingWDuringJump = false;
             coyoteTimeCounter = 0f;
         }
-        if (rb.velocity.y < 0f)
+        if (rb.velocity.y < 0.01)
         {
             GravDown();
 
