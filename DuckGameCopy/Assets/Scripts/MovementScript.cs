@@ -13,14 +13,14 @@ public class MovementScript : MonoBehaviour
     public float speed;
     private float moveInput;
     private bool isFacingRight;
-    private bool isCrouching;
 
     [Header("Jump")]
     public float jumpForce;
-
-    //Hold Counters
     private float jumpTimeCounter;
     public float jumpTime;
+
+    [Header("Crouching")]
+    private bool isCrouching;
 
     [Header("Hovering")]
     public float hoverSpeed;
@@ -114,6 +114,18 @@ public class MovementScript : MonoBehaviour
             Animator.SetBool("isFalling", false);
         }
 
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            isCrouching = true;
+            Animator.SetBool("isCrouching", true);
+        }
+
+        if (Input.GetKeyUp(KeyCode.S))
+        {
+            isCrouching = false;
+            Animator.SetBool("isCrouching", false);
+        }
+
         //Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
@@ -199,9 +211,6 @@ public class MovementScript : MonoBehaviour
             GravDown();
 
         }
-
-
-
     }
     void Flip()
     {
