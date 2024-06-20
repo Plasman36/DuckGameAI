@@ -13,14 +13,12 @@ public class MovementScript : MonoBehaviour
     public float speed;
     private float moveInput;
     private bool isFacingRight;
+    private bool isSliding;
 
     [Header("Jump")]
     public float jumpForce;
     private float jumpTimeCounter;
     public float jumpTime;
-
-    [Header("Crouching")]
-    private bool isCrouching;
 
     [Header("Hovering")]
     public float hoverSpeed;
@@ -94,7 +92,6 @@ public class MovementScript : MonoBehaviour
 
     private void Update()
     {
-
         Animator.SetFloat("speed", Mathf.Abs(rb.velocity.x));
         
         if(rb.velocity.y < -0.01)
@@ -116,14 +113,22 @@ public class MovementScript : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.S))
         {
-            isCrouching = true;
-            Animator.SetBool("isCrouching", true);
+            if(rb.velocity.x > 0.01 & isGrounded)
+            {
+                Animator.SetBool("isSliding", true);
+                Animator.SetBool("isCrouching", false);
+            }
+            else
+            {
+                Animator.SetBool("isSliding", false);
+                Animator.SetBool("isCrouching", true);
+            }
         }
 
         if (Input.GetKeyUp(KeyCode.S))
         {
-            isCrouching = false;
             Animator.SetBool("isCrouching", false);
+            Animator.SetBool("isSliding", false);
         }
 
         //Ground Check
