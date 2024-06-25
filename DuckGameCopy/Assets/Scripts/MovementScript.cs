@@ -13,7 +13,17 @@ public class MovementScript : MonoBehaviour
     public float speed;
     private float moveInput;
     private bool isFacingRight;
+    public float maxSpeed;
+    public float accelerationDecay;
+    public float accelerationAddition;
+
+    [Header("Slide & Crouch")]
+    public float slideFriction;
+    private float slideCounter;
+    public float slideDecreaseAmount;
+    public float slideHardCutoff;
     private bool isSliding;
+    private bool isCrouching;
 
     [Header("Jump")]
     public float jumpForce;
@@ -64,11 +74,57 @@ public class MovementScript : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //Horizontal Movement
         moveInput = Input.GetAxisRaw("Horizontal");
-        rb.velocity = new Vector2(moveInput * speed, rb.velocity.y);
+
+        //Horizontal Movement
+        Debug.Log(moveInput);
+
+        speed = rb.velocity.x;
+
+        if (!isSliding && !isCrouching)
+        {
+            if (moveInput == 1 && speed < maxSpeed)
+            {
+                speed += accelerationAddition;
+                rb.velocity = new Vector2(speed, rb.velocity.y);
+            }
+            else if (moveInput == 1 && speed >= maxSpeed)
+            {
+                rb.velocity = new Vector2(maxSpeed, rb.velocity.y);
+            }
+            if (moveInput == -1 && speed > -maxSpeed)
+            {
+                speed -= accelerationAddition;
+                rb.velocity = new Vector2(speed, rb.velocity.y);
+            }
+            else if (moveInput == -1 && speed <= -maxSpeed)
+            {
+                rb.velocity = new Vector2(-maxSpeed, rb.velocity.y);
+            }
+            if (moveInput == 0)
+            {
+                if (speed > 0)
+                {
+                    speed -= accelerationDecay;
+                    if (speed < 0) { 
+                        speed = 0; 
+                    }
+                    rb.velocity = new Vector2(speed, rb.velocity.y);
+                }
+                else if (speed < 0)
+                {
+                    speed += accelerationDecay;
+                    if (speed > 0)
+                    {
+                        speed = 0;
+                    }
+                    rb.velocity = new Vector2(speed, rb.velocity.y);
+                }
+            }
+        }
+
         //Fall Clamp and Hover
-        if(rb.velocity.y < 0)
+        if (rb.velocity.y < 0)
         {
             if(rb.velocity.y < hoverSpeed && Input.GetKey(KeyCode.W) && isHoldingWDuringJump == false)
             {
@@ -80,6 +136,7 @@ public class MovementScript : MonoBehaviour
             }
         }
 
+        //Animation Flip
         if(isFacingRight == false && moveInput < 0)
         {
             Flip();
@@ -92,9 +149,31 @@ public class MovementScript : MonoBehaviour
 
     private void Update()
     {
+        slideFriction = Mathf.Abs(rb.velocity.x);
+
         Animator.SetFloat("speed", Mathf.Abs(rb.velocity.x));
-        
-        if(rb.velocity.y < -0.01)
+
+        if (Input.GetKey(KeyCode.S))
+        {
+            if (Mathf.Abs(rb.velocity.x) > 0.1 && isGrounded)
+            {
+                Animator.SetBool("isSliding", true);
+                Animator.SetBool("isCrouching", false);
+
+                isSliding = true;
+                isCrouching = false;
+            }
+            else if(!isSliding)
+            {
+                Animator.SetBool("isSliding", false);
+                Animator.SetBool("isCrouching", true);
+
+                isSliding = false;
+                isCrouching = true;
+            }
+        }
+
+        if (rb.velocity.y < -0.01 && (!isCrouching && !isSliding))
         {
             Animator.SetBool("isFalling", true);
             Animator.SetBool("isJumping", false);
@@ -105,30 +184,39 @@ public class MovementScript : MonoBehaviour
             Animator.SetBool("isJumping", false);
         }
 
-        if (rb.velocity.y > 0.01)
+        if (rb.velocity.y > 0.01 && (!isCrouching && !isSliding))
         {
             Animator.SetBool("isJumping", true);
             Animator.SetBool("isFalling", false);
         }
 
-        if (Input.GetKeyDown(KeyCode.S))
+        if (isJumping)
         {
-            if(rb.velocity.x > 0.01 & isGrounded)
-            {
-                Animator.SetBool("isSliding", true);
-                Animator.SetBool("isCrouching", false);
-            }
-            else
-            {
-                Animator.SetBool("isSliding", false);
-                Animator.SetBool("isCrouching", true);
-            }
+            isSliding = false;
+        }
+
+        if (!isSliding)
+        {
+            slideCounter = slideFriction;
+        }
+
+        if (isSliding && slideCounter >= slideHardCutoff)
+        {
+            rb.velocity = new Vector2(moveInput * slideCounter, rb.velocity.y);
+            slideCounter -= slideDecreaseAmount;
+        }else if (isSliding)
+        {
+            rb.velocity = new Vector2(0, rb.velocity.y);
         }
 
         if (Input.GetKeyUp(KeyCode.S))
         {
             Animator.SetBool("isCrouching", false);
             Animator.SetBool("isSliding", false);
+
+            isSliding = false;
+            isCrouching = false;
+
         }
 
         //Ground Check
@@ -166,7 +254,8 @@ public class MovementScript : MonoBehaviour
         //Jump Initiation
         if(coyoteTimeCounter > 0f && jumpBufferingCounter > 0f)
         {
-            rb.velocity = Vector2.up * jumpForce;
+            //rb.velocity = Vector2.up * jumpForce;
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             isJumping = true;
             jumpTimeCounter = jumpTime;
             GravUp();
@@ -193,7 +282,8 @@ public class MovementScript : MonoBehaviour
         {
             if (jumpTimeCounter > 0)
             {
-                rb.velocity = Vector2.up * jumpForce;
+                //rb.velocity = Vector2.up * jumpForce;
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
                 jumpTimeCounter -= Time.deltaTime;
                 isHoldingWDuringJump = true;
             }

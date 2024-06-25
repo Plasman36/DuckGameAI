@@ -9318,9 +9318,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2528771472060411986, guid: 699b4e88385544c46be546059e6fa3e5, type: 3}
-      propertyPath: m_Simulated
-      value: 1
+    - target: {fileID: 2528771472060411996, guid: 699b4e88385544c46be546059e6fa3e5, type: 3}
+      propertyPath: speed
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2528771472060411996, guid: 699b4e88385544c46be546059e6fa3e5, type: 3}
+      propertyPath: maxSpeed
+      value: 10.33
+      objectReference: {fileID: 0}
+    - target: {fileID: 2528771472060411996, guid: 699b4e88385544c46be546059e6fa3e5, type: 3}
+      propertyPath: accelerationDecay
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2528771472060411996, guid: 699b4e88385544c46be546059e6fa3e5, type: 3}
+      propertyPath: accelerationAddition
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2528771472060412004, guid: 699b4e88385544c46be546059e6fa3e5, type: 3}
       propertyPath: m_Name
