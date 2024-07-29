@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class MovementScript : MonoBehaviour
 {
     private Rigidbody2D rb;
@@ -24,6 +23,8 @@ public class MovementScript : MonoBehaviour
     public float slideHardCutoff;
     private bool isSliding;
     private bool isCrouching;
+    private float slideDirection;
+    private bool isObstructed;
 
     [Header("Jump")]
     public float jumpForce;
@@ -53,7 +54,7 @@ public class MovementScript : MonoBehaviour
     [Header("Head Checks")]
     public Transform headPos;
     public float headRadius;
-    private bool isHeadHit;
+    public bool isHeadHit;
 
     //gravity Mods
     [Header("Gravity Modifiers")]
@@ -76,16 +77,17 @@ public class MovementScript : MonoBehaviour
     {
         moveInput = Input.GetAxisRaw("Horizontal");
 
-        //Horizontal Movement
+        // Horizontal Movement
         Debug.Log(moveInput);
 
         speed = rb.velocity.x;
 
+        // Sliding Movement
         if (!isSliding && !isCrouching)
         {
             if (moveInput == 1 && speed < maxSpeed)
             {
-                speed += accelerationAddition;
+                speed += accelerationAddition * Time.fixedDeltaTime;
                 rb.velocity = new Vector2(speed, rb.velocity.y);
             }
             else if (moveInput == 1 && speed >= maxSpeed)
@@ -94,7 +96,7 @@ public class MovementScript : MonoBehaviour
             }
             if (moveInput == -1 && speed > -maxSpeed)
             {
-                speed -= accelerationAddition;
+                speed -= accelerationAddition * Time.fixedDeltaTime;
                 rb.velocity = new Vector2(speed, rb.velocity.y);
             }
             else if (moveInput == -1 && speed <= -maxSpeed)
@@ -105,15 +107,16 @@ public class MovementScript : MonoBehaviour
             {
                 if (speed > 0)
                 {
-                    speed -= accelerationDecay;
-                    if (speed < 0) { 
-                        speed = 0; 
+                    speed -= accelerationDecay * Time.fixedDeltaTime;
+                    if (speed < 0)
+                    {
+                        speed = 0;
                     }
                     rb.velocity = new Vector2(speed, rb.velocity.y);
                 }
                 else if (speed < 0)
                 {
-                    speed += accelerationDecay;
+                    speed += accelerationDecay * Time.fixedDeltaTime;
                     if (speed > 0)
                     {
                         speed = 0;
@@ -123,10 +126,10 @@ public class MovementScript : MonoBehaviour
             }
         }
 
-        //Fall Clamp and Hover
+        // Fall Clamp and Hover
         if (rb.velocity.y < 0)
         {
-            if(rb.velocity.y < hoverSpeed && Input.GetKey(KeyCode.W) && isHoldingWDuringJump == false)
+            if (rb.velocity.y < hoverSpeed && Input.GetKey(KeyCode.W) && !isHoldingWDuringJump)
             {
                 rb.velocity = new Vector2(rb.velocity.x, hoverSpeed);
             }
@@ -136,12 +139,12 @@ public class MovementScript : MonoBehaviour
             }
         }
 
-        //Animation Flip
-        if(isFacingRight == false && moveInput < 0)
+        // Animation Flip
+        if (!isFacingRight && moveInput < 0 && (!isSliding || !isCrouching))
         {
             Flip();
         }
-        else if (isFacingRight == true && moveInput > 0)
+        else if (isFacingRight && moveInput > 0 && (!isSliding || !isCrouching))
         {
             Flip();
         }
@@ -153,17 +156,20 @@ public class MovementScript : MonoBehaviour
 
         Animator.SetFloat("speed", Mathf.Abs(rb.velocity.x));
 
-        if (Input.GetKey(KeyCode.S))
+        // Sliding and Movement Animations
+        if (Input.GetKeyDown(KeyCode.S))
         {
-            if (Mathf.Abs(rb.velocity.x) > 0.1 && isGrounded)
+            if (Mathf.Abs(rb.velocity.x) > 0.1f && isGrounded)
             {
                 Animator.SetBool("isSliding", true);
                 Animator.SetBool("isCrouching", false);
 
                 isSliding = true;
                 isCrouching = false;
+
+                slideDirection = moveInput;
             }
-            else if(!isSliding)
+            else if (!isSliding)
             {
                 Animator.SetBool("isSliding", false);
                 Animator.SetBool("isCrouching", true);
@@ -173,18 +179,29 @@ public class MovementScript : MonoBehaviour
             }
         }
 
-        if (rb.velocity.y < -0.01 && (!isCrouching && !isSliding))
+        if (isCrouching && isGrounded && Mathf.Abs(rb.velocity.x) > 0)
+        {
+            Animator.SetBool("isSliding", true);
+            Animator.SetBool("isCrouching", false);
+
+            isSliding = true;
+            isCrouching = false;
+
+            slideDirection = moveInput;
+        }
+
+        if (rb.velocity.y < -0.01f && (!isCrouching && !isSliding))
         {
             Animator.SetBool("isFalling", true);
             Animator.SetBool("isJumping", false);
         }
-        if(rb.velocity.y > -0.01 && rb.velocity.y < 0.01)
+        if (rb.velocity.y > -0.01f && rb.velocity.y < 0.01f)
         {
             Animator.SetBool("isFalling", false);
             Animator.SetBool("isJumping", false);
         }
 
-        if (rb.velocity.y > 0.01 && (!isCrouching && !isSliding))
+        if (rb.velocity.y > 0.01f && (!isCrouching && !isSliding))
         {
             Animator.SetBool("isJumping", true);
             Animator.SetBool("isFalling", false);
@@ -202,27 +219,27 @@ public class MovementScript : MonoBehaviour
 
         if (isSliding && slideCounter >= slideHardCutoff)
         {
-            rb.velocity = new Vector2(moveInput * slideCounter, rb.velocity.y);
-            slideCounter -= slideDecreaseAmount;
-        }else if (isSliding)
+            rb.velocity = new Vector2(slideDirection * slideCounter, rb.velocity.y);
+            slideCounter -= slideDecreaseAmount * Time.deltaTime;
+        }
+        else if (isSliding)
         {
             rb.velocity = new Vector2(0, rb.velocity.y);
         }
 
-        if (Input.GetKeyUp(KeyCode.S))
+        if (!Input.GetKey(KeyCode.S) && !isHeadHit)
         {
             Animator.SetBool("isCrouching", false);
             Animator.SetBool("isSliding", false);
 
             isSliding = false;
             isCrouching = false;
-
         }
 
-        //Ground Check
+        // Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
-        //Head Check
+        // Head Check
         isHeadHit = Physics2D.OverlapCircle(headPos.position, headRadius, whatIsGround);
 
         if (isHeadHit)
@@ -251,10 +268,9 @@ public class MovementScript : MonoBehaviour
             jumpBufferingCounter -= Time.deltaTime;
         }
 
-        //Jump Initiation
-        if(coyoteTimeCounter > 0f && jumpBufferingCounter > 0f)
+        // Jump Initiation
+        if (coyoteTimeCounter > 0f && jumpBufferingCounter > 0f)
         {
-            //rb.velocity = Vector2.up * jumpForce;
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             isJumping = true;
             jumpTimeCounter = jumpTime;
@@ -263,26 +279,25 @@ public class MovementScript : MonoBehaviour
             jumpBufferingCounter = 0f;
         }
 
-        //Grav Change
+        // Gravity Change
         if (isJumping)
         {
-            ++gravityCounter;
+            gravityCounter += Time.deltaTime;
             if (gravityCounter >= zeroGravityTime)
             {
-                rb.gravityScale = rb.gravityScale + gravityCut;
+                rb.gravityScale += gravityCut * Time.deltaTime;
             }
-            if (rb.gravityScale == gravity)
+            if (rb.gravityScale >= gravity)
             {
                 rb.gravityScale = gravity;
             }
         }
 
-        //Jump Hold
-        if (Input.GetKey(KeyCode.W) && isJumping == true)
+        // Jump Hold
+        if (Input.GetKey(KeyCode.W) && isJumping)
         {
             if (jumpTimeCounter > 0)
             {
-                //rb.velocity = Vector2.up * jumpForce;
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
                 jumpTimeCounter -= Time.deltaTime;
                 isHoldingWDuringJump = true;
@@ -301,12 +316,12 @@ public class MovementScript : MonoBehaviour
             isHoldingWDuringJump = false;
             coyoteTimeCounter = 0f;
         }
-        if (rb.velocity.y < 0.01)
+        if (rb.velocity.y < 0.01f)
         {
             GravDown();
-
         }
     }
+
     void Flip()
     {
         isFacingRight = !isFacingRight;
@@ -324,12 +339,5 @@ public class MovementScript : MonoBehaviour
     {
         rb.gravityScale = gravity;
     }
-}
-/*If I press down and there is a horizontal velocity
-	Change player scale to fit a slide
-	Slowly decrease velocity until it’s 0
 
-	(ALSO REMOVE THE CAPABILITY TO WALK, SLIDING AND WALKING AT THE SAME TIME IS KINDA WEIRD)
-Else if I press down (without a horizontal velocity)
-	Squat
-*/
+}

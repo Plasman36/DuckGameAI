@@ -231,7 +231,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   headPos: {fileID: 2528771470820128538}
-  headRadius: 0.01
+  headRadius: 0.1
+  isHeadHit: 0
   gravityMod: 0
   gravityCut: 0.2
   fallClamp: -15
