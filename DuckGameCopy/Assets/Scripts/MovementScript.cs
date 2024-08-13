@@ -1,20 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class MovementScript : MonoBehaviour
 {
     private Rigidbody2D rb;
     public BoxCollider2D bc;
     public Animator Animator;
+    public Animator childAnimator;
 
     [Header("Horizontal Movement")]
     public float speed;
     private float moveInput;
-    private bool isFacingRight;
+    public bool isFacingRight = true;
     public float maxSpeed;
     public float accelerationDecay;
     public float accelerationAddition;
+    private bool flipped;
 
     [Header("Slide & Crouch")]
     public float slideFriction;
@@ -34,6 +37,8 @@ public class MovementScript : MonoBehaviour
     [Header("Hovering")]
     public float hoverSpeed;
     private bool isHoldingWDuringJump;
+    private bool isHovering;
+    public HoveringAnimationScript A;
 
     [Header("Coyote Time")]
     public float coyoteTime;
@@ -65,6 +70,17 @@ public class MovementScript : MonoBehaviour
     private float zeroGravityTime;
     public float fallClamp;
 
+    //weapon
+    [Header("Weapon")]
+    public Transform firePoint;
+    public Transform rotatePoint;
+    public GameObject bulletPrefab;
+    public Transform endOfBarrel;
+    public float frontOfGunRadius;
+    public bool isTouchingWall;
+    public LayerMask whatIsWall;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -75,11 +91,16 @@ public class MovementScript : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (isHeadHit)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, 0);
+            isJumping = false;
+            rb.gravityScale = gravity;
+        }
+
         moveInput = Input.GetAxisRaw("Horizontal");
 
         // Horizontal Movement
-        Debug.Log(moveInput);
-
         speed = rb.velocity.x;
 
         // Sliding Movement
@@ -138,16 +159,6 @@ public class MovementScript : MonoBehaviour
                 rb.velocity = new Vector2(rb.velocity.x, fallClamp);
             }
         }
-
-        // Animation Flip
-        if (!isFacingRight && moveInput < 0 && (!isSliding || !isCrouching))
-        {
-            Flip();
-        }
-        else if (isFacingRight && moveInput > 0 && (!isSliding || !isCrouching))
-        {
-            Flip();
-        }
     }
 
     private void Update()
@@ -155,6 +166,9 @@ public class MovementScript : MonoBehaviour
         slideFriction = Mathf.Abs(rb.velocity.x);
 
         Animator.SetFloat("speed", Mathf.Abs(rb.velocity.x));
+
+        //Gun Animations
+        childAnimator.SetBool("isTouchingWall", isTouchingWall);
 
         // Sliding and Movement Animations
         if (Input.GetKeyDown(KeyCode.S))
@@ -179,7 +193,7 @@ public class MovementScript : MonoBehaviour
             }
         }
 
-        if (isCrouching && isGrounded && Mathf.Abs(rb.velocity.x) > 0)
+        if (isCrouching && isGrounded && Mathf.Abs(rb.velocity.x) > 0.1)
         {
             Animator.SetBool("isSliding", true);
             Animator.SetBool("isCrouching", false);
@@ -188,28 +202,6 @@ public class MovementScript : MonoBehaviour
             isCrouching = false;
 
             slideDirection = moveInput;
-        }
-
-        if (rb.velocity.y < -0.01f && (!isCrouching && !isSliding))
-        {
-            Animator.SetBool("isFalling", true);
-            Animator.SetBool("isJumping", false);
-        }
-        if (rb.velocity.y > -0.01f && rb.velocity.y < 0.01f)
-        {
-            Animator.SetBool("isFalling", false);
-            Animator.SetBool("isJumping", false);
-        }
-
-        if (rb.velocity.y > 0.01f && (!isCrouching && !isSliding))
-        {
-            Animator.SetBool("isJumping", true);
-            Animator.SetBool("isFalling", false);
-        }
-
-        if (isJumping)
-        {
-            isSliding = false;
         }
 
         if (!isSliding)
@@ -236,18 +228,64 @@ public class MovementScript : MonoBehaviour
             isCrouching = false;
         }
 
+        //Falling and Jumping
+
+        if (rb.velocity.y < -0.01f && (!isCrouching && !isSliding))
+        {
+            Animator.SetBool("isFalling", true);
+            Animator.SetBool("isJumping", false);
+        }
+        if (rb.velocity.y > -0.01f && rb.velocity.y < 0.01f)
+        {
+            Animator.SetBool("isFalling", false);
+            Animator.SetBool("isJumping", false);
+        }
+
+        if (rb.velocity.y > 0.01f && (!isCrouching && !isSliding))
+        {
+            Animator.SetBool("isJumping", true);
+            Animator.SetBool("isFalling", false);
+        }
+
+        if (isJumping)
+        {
+            isSliding = false;
+        }
+
+        //Hovering
+        if (!isGrounded && Input.GetKey(KeyCode.W) && !isHoldingWDuringJump && rb.velocity.y < 0.3)
+        {
+            childAnimator.SetBool("isHovering", true);
+        }
+        else
+        {
+            childAnimator.SetBool("isHovering", false);
+        }
+
+        //Hovering Flipping
+        if(flipped)
+        {
+            childAnimator.SetBool("Flipped", true);
+            flipped = false;
+            Debug.Log("Flipped");
+        }
+
+        if (isGrounded)
+        {
+            flipped = false;
+            childAnimator.SetBool("Flipped", false);
+        }
+
+
         // Ground Check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, checkRadius, whatIsGround);
 
         // Head Check
         isHeadHit = Physics2D.OverlapCircle(headPos.position, headRadius, whatIsGround);
 
-        if (isHeadHit)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, 0);
-            isJumping = false;
-            rb.gravityScale = gravity;
-        }
+        // Front of Gun Check
+
+        isTouchingWall = Physics2D.OverlapCircle(endOfBarrel.position, frontOfGunRadius, whatIsWall);
 
         if (isGrounded)
         {
@@ -316,18 +354,37 @@ public class MovementScript : MonoBehaviour
             isHoldingWDuringJump = false;
             coyoteTimeCounter = 0f;
         }
+
         if (rb.velocity.y < 0.01f)
         {
             GravDown();
         }
-    }
 
+        // Animation Flip
+        if (isFacingRight && moveInput < 0 && (!isSliding || !isCrouching))
+        {
+            Flip();
+        }
+        else if (!isFacingRight && moveInput > 0 && (!isSliding || !isCrouching))
+        {
+            Flip();
+        }
+
+    }
     void Flip()
     {
         isFacingRight = !isFacingRight;
+
+        /*
         Vector2 Scaler = transform.localScale;
         Scaler.x *= -1;
-        transform.localScale = Scaler;
+        transform.localScale = Scaler;*/
+
+        transform.Rotate(0, 180, 0);
+        if(rb.velocity.y < -0.3)
+        {
+            flipped = true;
+        }
     }
 
     void GravUp()
@@ -338,6 +395,11 @@ public class MovementScript : MonoBehaviour
     void GravDown()
     {
         rb.gravityScale = gravity;
+    }
+
+    public void Death()
+    {
+        //reset stuff here
     }
 
 }
